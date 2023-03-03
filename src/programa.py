@@ -327,7 +327,7 @@ class registro(QtWidgets.QDialog, Ui_MRegistro):
         self.epuestos.setItemText(23,"")
         self.epuestos.setItemText(24,"")
         
-        # El contenedor erreda todas las propiedades de el Widget para cargar la
+        # El contenedor hereda todas las propiedades de el Widget para cargar la
         # imagen, Pixelamos y le damo la escla que tiene el self.mapa para 
         # mostrarlo con contenedor.setPixmap(imagen).
         
