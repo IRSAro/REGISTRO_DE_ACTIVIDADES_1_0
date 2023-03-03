@@ -1,60 +1,177 @@
 # -*- coding: utf-8 -*-
+# CODIGO PARA EL REGISTRO DE ACTIVIDADES UTILIZANDO PYQT5 Y PYTHON 3.8
+# NOMBRE: REGISTRO DE ACTIVIDADES 1.0
+# AUTOR: ROSANA SANCHEZ
+# CORREO: rosaxna_31@hotmail.es
+
+#------------------------------------------------------------------------------#
+#Importamos todas las caracteristicas del entorno grafico
+#Cada interfas es creada en otro documento .py para tener comodidad al realizar 
+#modificacionbes
 
 from inicio import *
 from registro import *
 from consulta import *
-from datetime  import date, time, datetime 
-from sqlite3 import connect
+
+#------------------------------------------------------------------------------#
+from datetime  import date, time, datetime #libreria de para el uso de tiempo
+from sqlite3 import connect                # Libreria para la base de datos 
+
+#------------------------------------------------------------------------------#
+#Conectamos con el archivo de db al que llamamos DATOS
 
 conectar = connect('DATOS.db')   
 puntero = conectar.cursor()
 
-puntero.execute("""CREATE TABLE IF NOT EXISTS Reportes (InfID INTEGER PRIMARY KEY 
-AUTOINCREMENT, Fecha TEXT, Hora TEXT,  Oficina TEXT, Soporte TEXT, 
-Descripcion TEXT, Puesto TEXT, Bien TEXT, IP TEXT, MAC TEXT, Observacion TEXT, Estatus TEXT)""")        
+#------------------------------------------------------------------------------#
+#Se crea la tabla donde estaran los campos que se van a registrar y conectamos
+# InfID = Numero de identificación del registro
+# Fecha = Fecha de cuando se creo el registro
+# Hora = Horario en el que fue realizado la actividad
+# Oficina = Para quien se realizo la actividad y o el lugar donde se realizo
+# Soporte = Que tipo de soporte / actividad se realizo en esa oficina
+# Descripcion = Descripcio de la activiad realizada
+# Puesto = Puesto de trabajo yo ubicacion del computador de la oficina
+# Bien = Numero de bien muble del equipo si se requiere
+# IP / MAC = imformacion opcional 
+# Observacion = Algun comentario o nota para complementar el registro
+# Estatus = Indica si la activida fue culminada, esta en proceso o no se culmino
+
+puntero.execute("""CREATE TABLE IF NOT EXISTS Reportes (InfID INTEGER PRIMARY 
+KEY AUTOINCREMENT, Fecha TEXT, Hora TEXT,  Oficina TEXT, Soporte TEXT, 
+Descripcion TEXT, Puesto TEXT, Bien TEXT, IP TEXT, MAC TEXT, Observacion TEXT, 
+Estatus TEXT)""")        
 conectar.commit()
 
-class consulta(QtWidgets.QDialog, Ui_MConsulta):
-    
+#------------------------------------------------------------------------------#
+# Nota: 1. los nombres de las class son indiferentes a los llamados en from
+#       2. Qtwidget.QDialog son SubClass de los from llamados registro y 
+#          consulta.
+#       3. QDialog como su nombre lo indica es una ventana emergente para 
+#          solicitar/consultar informacón/dar información.
+#       4. QMainWindow es la ventana que soportara todos los Widget utilizados
+#           en el programa.
+#
+#       5. Estructura de las SubClass:
+#
+#   class "Nombre"(QtWidgets.QDialog,"Nombre de la class del .py de registro o consulta"): 
+#
+#       def __init__(self, *args, **kwargs):
+#           #Despliega Qdialog como si fuera un QMainWindow
+#           #con todas las caracteristicas de la class del .py 
+#           QtWidgets.QMainWindow.__init__(self, *args, **kwargs) 
+#           self.setupUi(self)
+#
+#        6. Estructura de la Class principal:
+#       
+#   class "Nombre"(QtWidgets.QMainWindow, "Nombre de la class del .py de inicio"):    
+#       def __init__(self, *args, **kwargs):        
+#           QtWidgets.QMainWindow.__init__(self, *args, **kwargs)
+#           self.setupUi(self)
+#
+#   if __name__ == "__main__":
+#       app = QtWidgets.QApplication([])
+#       window = "Nombre de la class principal"()
+#       window.show()
+#       app.exec_()
+#
+#------------------------------------------------------------------------------#
+
+#------------------------------------------------------------------------------#
+# Clase donde podremos ver todos los reportes utilizando QTableWidget 
+#
+class consulta(QtWidgets.QDialog, Ui_MConsulta): 
+
     def __init__(self, *args, **kwargs):
         
         QtWidgets.QMainWindow.__init__(self, *args, **kwargs)
         self.setupUi(self)
         
-        conectar = connect('DATOS.db')   
-        puntero = conectar.cursor()
+        #Conectamos a la base de datos y guardamos los datos
+        
+        conectar = connect('DATOS.db')  
+        puntero = conectar.cursor()      
         puntero.execute("SELECT InfID,Fecha,Hora,Oficina,Soporte,Descripcion,Puesto,Bien,IP,MAC,Observacion,Estatus FROM Reportes")        
+        
         datos = puntero.fetchall()
         conectar.close()
         
-        self.visordereportes.setRowCount(len(datos))
+        # datos es una variable tipo list con tuple. ejem
+        # 1.Tuple 1
+        # 2.Tuple 2
+        # 3.Tuple 3
+        
+        # Tuple es una lista de elementos dentro de usa sola variable separados 
+        # por comas. ejem
+        # lista = ("primero","segundo","tercero","...")
+        
+        #len(datos) devuelve un valor entero con la cantidad de elementos en la 
+        #lista.
+        #setRowCount crea tantas filas como le sean indicadas en la tabla, 
+        #en este caso la cantidad de reportes es proporcinal a lo que indica la 
+        #funcion len.
+        
+        limite=len(datos) #cantidad de filas de la list
+        
+        #self."Nombre de el objeto".creamosfilas(numero de filas)
+        
+        self.visordereportes.setRowCount(limite)
         
         #-----------------------------------------------------------------------
-        fila = 0
+        # Para mostrar los reportes tenemos que movilizarnos atraves de la list 
+        # con tuples por ello utilizaremos la siguiente rutina:
+        
+        fila = 0   
         columna = 0
-        limite=len(datos)
-        while fila < limite:    
-            datotuple = datos[fila]
+        
+        while fila < limite:
+            
+            datotuple = datos[fila] #Guardamos un tuple de la list
+            
             while columna < 12:
+                
+                # Nos desplazamos por cada elemto del tuple para mostrarlo, el
+                # str combierte cualquir elemento en una cadena de caracteres 
+                # para poder mostralo en el Qtable
+                
                 elementodetuple=str(datotuple[columna])
-                datoparamostrar = QtWidgets.QTableWidgetItem(elementodetuple)        
+                
+                # Combertimos el elemento del tuple en un item de Qtable
+                datoparamostrar = QtWidgets.QTableWidgetItem(elementodetuple)
+                
+                # Mostramos los datos en la fila y la columna correspondientes 
+                # con la siguente liena
+                
                 self.visordereportes.setItem(fila,columna,datoparamostrar)
-                columna=columna+1                
+                columna=columna+1   
+                
+            # Una vez que termine de mostrar la fila correspondiente llevamos
+            # la columna en 0 y incrementamos la fila para mostrar el siguiente 
+            # tuple
+            
             columna=0
             fila=fila+1
         #-----------------------------------------------------------------------
-
-            
+         
+    #--------------------------------------------------------------------------#    
+    
+    # Funcion incluida en PyQt5 donde al cerrar la ventana podemos elegir la 
+    # si continuar cerrando o cancelar, el mensaje puede cambiar.
+    
+    def closeEvent(self, event):
         
-    def closeEvent(self, event):        
         close = QtWidgets.QMessageBox.question(self,
-        "Advertencia ","Volvera al menu inicio", 
+        "Advertencia ","Volvera al menu inicio", # El mensaje puede cambiar 
         QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)                    
         if close == QtWidgets.QMessageBox.Yes:                
             event.accept()
         else:    
             event.ignore()
-
+    #--------------------------------------------------------------------------#
+    
+#------------------------------------------------------------------------------#
+# Clase donde podremos registrar cada uno de los reportes
+#    
 class registro(QtWidgets.QDialog, Ui_MRegistro):
     
     def __init__(self, *args, **kwargs):
@@ -62,43 +179,30 @@ class registro(QtWidgets.QDialog, Ui_MRegistro):
         QtWidgets.QMainWindow.__init__(self, *args, **kwargs)
         self.setupUi(self)
         
+        # Tomamos la fecha actual
         fecha=datetime.now()
+        # Guardamos la fecha como una cadena de caracteres con formato dd/mm/aa
         tfecha= fecha.strftime("%d/%m/%y")
+        
+        #Mostramos la fecha con el Widget mfecha del registro.py
         self.mfecha.setText(tfecha)
- 
-        self.cargardatos.clicked.connect(self.guardarreporte)
+        
+        # En el programa tenemos dos ComboBox que cambian su contenido segun 
+        # lo requerido, si se activa cada uno muestra elementos diferente en los
+        # ComboBox restantes.
+        
         self.eoficina.activated.connect(self.cargarlistadepuestos)
         self.esoporte.activated.connect(self.cargarsoportes)
         
-    def guardarreporte(self):
-        
-        fecha=datetime.now()
-        tid=fecha.strftime("%y%d%m%H%M%S")
-        
-        inffecha       = fecha.strftime("%d/%m/%y")
-        infid          = int(tid)
-        infturno       = self.eturno.currentText()
-        infoficina     = self.eoficina.currentText()
-        infsoporte     = self.esoporte.currentText()
-        infdescripcion = self.edescripcion.currentText()
-        infpuesto      = self.epuestos.currentText()
-        infbien        = self.ebien.text()
-        infip          = self.eip.text()
-        infmac         = self.emac.text()
-        infnota        = self.enota.text()
-        infestatus     = self.eestatus.currentText()
-        
-        data =(infid,inffecha,infturno,infoficina,infsoporte,infdescripcion,infpuesto,infbien,infip,infmac,infnota,infestatus)
-        puntero.execute("""INSERT INTO Reportes
-        (InfID,Fecha, Hora,  Oficina, Soporte,Descripcion, Puesto, Bien, IP, MAC, Observacion, Estatus)
-        VALUES(?,?,?,?,?,?,?,?,?,?,?,?)""", data)                
-        conectar.commit()
-        
-        QtWidgets.QMessageBox.information(self, "Información", 
-        """Se registro correctamente""", QtWidgets.QMessageBox.Ok)
-         
-                
+        #Conecta el Boton cargardatos con la rutina para guardar el reporte
+        self.cargardatos.clicked.connect(self.guardarreporte)
+    
+    # Carga la informacion del ComboBox de descripcion dependiendo de lo que 
+    # este el ComboBox de Soporte
+    
     def cargarsoportes(self):
+        
+        # Lista del comboxBox de descripcion (numero de lista, texto)
         
         self.edescripcion.setItemText(0,"")
         self.edescripcion.setItemText(1,"")
@@ -112,6 +216,14 @@ class registro(QtWidgets.QDialog, Ui_MRegistro):
         self.edescripcion.setItemText(9,"")
         self.edescripcion.setItemText(10,"")
         self.edescripcion.setItemText(11,"")
+        self.edescripcion.setItemText(12,"")
+        self.edescripcion.setItemText(13,"")
+        self.edescripcion.setItemText(14,"")
+        self.edescripcion.setItemText(15,"")
+        self.edescripcion.setItemText(16,"")
+        
+        # Agarramos lo que esta en el combox de soportes y realizamos 
+        # las correspondientes comparaciones, para mostrar segun lo indicado.
         
         soporte = self.esoporte.currentText()
         
@@ -181,8 +293,14 @@ class registro(QtWidgets.QDialog, Ui_MRegistro):
             self.edescripcion.setItemText(15,"Realización de memorándums.")
             self.edescripcion.setItemText(16,"Control de asistencia e inasistencia.")
 
-        
+    # Agarramos lo que esta en el combox de oficina y realizamos 
+    # las correspondientes comparaciones, para mostrar la cantidad de puesto y 
+    # el  mapa que muestra donde se encuentran ubicados esos puestos de trabajo. 
+    
     def cargarlistadepuestos(self):
+        
+        # Lista del comboxBox de los puestos de trabajo (numero de lista, texto)
+        
         self.epuestos.setItemText(0,"")
         self.epuestos.setItemText(1,"")
         self.epuestos.setItemText(2,"")
@@ -208,6 +326,17 @@ class registro(QtWidgets.QDialog, Ui_MRegistro):
         self.epuestos.setItemText(22,"")
         self.epuestos.setItemText(23,"")
         self.epuestos.setItemText(24,"")
+        
+        # El contenedor erreda todas las propiedades de el Widget para cargar la
+        # imagen, Pixelamos y le damo la escla que tiene el self.mapa para 
+        # mostrarlo con contenedor.setPixmap(imagen).
+        
+        contenedor = self.mapa
+        imagen = QPixmap("NOIMAGEN.jpg").scaled(500,300)
+        contenedor.setPixmap(imagen)
+        
+        # Agarramos lo que esta en el combox de oficina y realizamos 
+        # las correspondientes comparaciones, para mostrar segun lo indicado.
         
         oficina = self.eoficina.currentText()
         
@@ -567,7 +696,49 @@ class registro(QtWidgets.QDialog, Ui_MRegistro):
             contenedor = self.mapa
             imagen = QPixmap("NOIMAGEN.jpg").scaled(500,300)
             contenedor.setPixmap(imagen)     
-            
+    
+    
+    #Funcion donde si le damos click al boton guardar 
+    # seleccionamos y guardamos en la base de datos la informacion
+    
+    def guardarreporte(self):
+        
+        fecha=datetime.now()
+        # El ID es el Key por ende tiene que se una variable int, para esto 
+        # seleccionamos en orden años, mes, dia, hora, minuto y segundos para 
+        # crear un numero unico consecutivo y lo convertimos en int
+        
+        tid=fecha.strftime("%y%m%d%H%M%S")
+        infid          = int(tid)
+        
+        inffecha       = fecha.strftime("%d/%m/%y")
+        infturno       = self.eturno.currentText()
+        infoficina     = self.eoficina.currentText()
+        infsoporte     = self.esoporte.currentText()
+        infdescripcion = self.edescripcion.currentText()
+        infpuesto      = self.epuestos.currentText()
+        infbien        = self.ebien.text()
+        infip          = self.eip.text()
+        infmac         = self.emac.text()
+        infnota        = self.enota.text()
+        infestatus     = self.eestatus.currentText()
+        
+        #Creamos un tuple con los datos ya ingresados
+        
+        data =(infid,inffecha,infturno,infoficina,infsoporte,infdescripcion,infpuesto,infbien,infip,infmac,infnota,infestatus)
+        
+        #Insertamos la informacion en la base de datos
+        
+        puntero.execute("""INSERT INTO Reportes
+        (InfID,Fecha, Hora,  Oficina, Soporte,Descripcion, Puesto, Bien, IP, MAC, Observacion, Estatus)
+        VALUES(?,?,?,?,?,?,?,?,?,?,?,?)""", data)                
+        conectar.commit()
+        
+        #mostramos una ventana confirmando que se guardaron los datos y continuamos
+        
+        QtWidgets.QMessageBox.information(self, "Información", 
+        """Se registro correctamente""", QtWidgets.QMessageBox.Ok)
+        
     def closeEvent(self, event):        
         close = QtWidgets.QMessageBox.question(self,
         "Advertencia ","Volvera al menu inicio", 
@@ -575,22 +746,28 @@ class registro(QtWidgets.QDialog, Ui_MRegistro):
         if close == QtWidgets.QMessageBox.Yes:                
             event.accept()
         else:    
-            event.ignore()  
-            
-    
+            event.ignore()
 #------------------------------------------------------------------------------#
+
+#------------------------------------------------------------------------------#
+# Clase principal  con QMainWindow que despliega todas las funciones
+#
+
 class inicio(QtWidgets.QMainWindow, Ui_MInicio):
     
     def __init__(self, *args, **kwargs):
         
         QtWidgets.QMainWindow.__init__(self, *args, **kwargs)
         self.setupUi(self)
+        
         self.idatos.clicked.connect(self.bidatos)
         self.cdatos.clicked.connect(self.bcdatos)
-            
+        
+    #LLamamos a la class registro        
     def bidatos(self):
         registro(self).exec_()
-    
+        
+    #llamamos a la class consulta
     def bcdatos(self):
         consulta(self).exec_()
     
@@ -602,7 +779,7 @@ class inicio(QtWidgets.QMainWindow, Ui_MInicio):
             event.accept()
         else:    
             event.ignore()
-#------------------------------------------------------------------------------#
+            
 if __name__ == "__main__":
 
     app = QtWidgets.QApplication([])
