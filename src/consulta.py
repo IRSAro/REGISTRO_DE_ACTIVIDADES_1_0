@@ -66,6 +66,7 @@ class Ui_MConsulta(object):
         self.visordereportes.setHorizontalHeaderLabels(("ID","Fecha", "Turno",  "Oficina", "Soporte","Descripción", 
                                              "Puesto", "Bien", "IP", "MAC", "Observación", "Estatus"))
         
+        
         MConsulta.setPalette(colores)
         
         self.retranslateUi(MConsulta)

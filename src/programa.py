@@ -24,9 +24,27 @@ class consulta(QtWidgets.QDialog, Ui_MConsulta):
         conectar = connect('DATOS.db')   
         puntero = conectar.cursor()
         puntero.execute("SELECT InfID,Fecha,Hora,Oficina,Soporte,Descripcion,Puesto,Bien,IP,MAC,Observacion,Estatus FROM Reportes")        
-        datosDB = puntero.fetchall()
+        datos = puntero.fetchall()
         conectar.close()
         
+        self.visordereportes.setRowCount(len(datos))
+        
+        #-----------------------------------------------------------------------
+        fila = 0
+        columna = 0
+        limite=len(datos)
+        while fila < limite:    
+            datotuple = datos[fila]
+            while columna < 12:
+                elementodetuple=str(datotuple[columna])
+                datoparamostrar = QtWidgets.QTableWidgetItem(elementodetuple)        
+                self.visordereportes.setItem(fila,columna,datoparamostrar)
+                columna=columna+1                
+            columna=0
+            fila=fila+1
+        #-----------------------------------------------------------------------
+
+            
         
     def closeEvent(self, event):        
         close = QtWidgets.QMessageBox.question(self,
